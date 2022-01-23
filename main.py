@@ -8,7 +8,7 @@ width = 700
 height = 500
 game_window = pygame.display.set_mode((width,height))
 
-keepPlaying = True
+keepPlaying = False
 
 pygame.init()
 
@@ -77,12 +77,13 @@ winter = pygame.transform.scale(winter,(150,100))
 
 start = load_image('images/Start.png', sizeX= 200, sizeY= 100)
 exit = load_image('images/Exit.png', sizeX= 200, sizeY= 100)
+coin = load_image('images/coin.png', sizeX = 50, sizeY= 30)
 
 road = load_image('background/road.png')
 blue = pygame.Color(0,0,200)
 
 tick = load_image('images/tick.png' , sizeX = 80,sizeY= 80)
-
+wheelX = 0
 red = pygame.Color(255,0,0)
 
 def levels_selected(level = "", character = ""):
@@ -102,6 +103,7 @@ def levels_selected(level = "", character = ""):
     topText = my_font.render('Please select a character and a level', True, red)
     rect = topText.get_rect()
     rect.midtop = (350,30)
+    game_window.blit(desertBg, (0,0))
     game_window.blit(topText, rect)
   
 
@@ -119,7 +121,9 @@ def levels_selected(level = "", character = ""):
     running = True
 
     while running:
-        
+            
+        fpscontroller.tick(fps)
+        pygame.display.update()        
         mx,my = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -135,9 +139,11 @@ def levels_selected(level = "", character = ""):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if rectA.collidepoint((mx,my)):
                     character = "orc"
+                    
                                 
                 if rectB.collidepoint((mx,my)):
                     character = "girl"
+                    
                    #rectB.fill(blue)
                 if rectC.collidepoint((mx,my)):
                     character = "t"
@@ -156,30 +162,26 @@ def levels_selected(level = "", character = ""):
                     # rectF.fill(blue)
                 if rectG.collidepoint((mx,my)):
                     if character != "" and level != "":
-
-                        running = False
                         keepPlaying = True
+                        return (level,character)
+                        print("Keepplaying",keepPlaying)
+                        running = False
                 if rectH.collidepoint((mx,my)):
                     pygame.quit()
                     sys.exit()
                 
-                # if character == 'orc':
-                #         game_window.blit(orchead, (rectA.x,rectA.y))
-                # else:
-                #     character = "orc"
-                #     game_window.blit(tick,(rectA.x,rectA.y))
-        
-    print("I am out of running loop...")
+                    
     return (level,character)
 
-
-
+values = levels_selected()
+keepPlaying = True
+import random
+coinPosition = [random.randint(10,width),orc_height + 20]
 
 while keepPlaying:
     game_window.blit(desertBg, (0,0))
-    values = levels_selected()
     level,character = values
-    print(level,character)
+    # print(level,character)
     if level == 'graveyard':
         game_window.blit(graveyardBG,(0,0))
         game_window.blit(road,(0,height-50))
@@ -191,16 +193,19 @@ while keepPlaying:
         game_window.blit(road,(0,height-50))
 
     if character == 'orc':
+        wheelX = orc_width+60
         game_window.blit(orc_car,(orc_width,orc_height))
-        game_window.blit(orcwheel,(orc_width+10,orc_height + 20))
-        game_window.blit(orcwheel,(orc_width+60,orc_height + 20))
+        game_window.blit(orcwheel,(orc_width + 10,orc_height + 20))
+        game_window.blit(orcwheel,(wheelX,orc_height + 20))
         game_window.blit(orcheadplay,(orc_width+10,orc_height-40))
+        # character_width = orc_width
     
     if character == 'girl':
         game_window.blit(girlcar,(girl_width,girl_height))
         game_window.blit(girlwheel,(girl_width+10,girl_height + 20))
         game_window.blit(girlwheel,(girl_width+60,girl_height + 20))
         game_window.blit(girlheadplay,(girl_width+10,girl_height-40)) 
+        # character_width = girl_width
         
 
     if character == 't':
@@ -208,11 +213,10 @@ while keepPlaying:
         game_window.blit(twheel,(t_width+10,t_height + 20))
         game_window.blit(twheel,(t_width+60,t_height + 20))
         game_window.blit(theadplay,(t_width+10,t_height-40))
+        # character_width = t_width
 
-    
+    game_window.blit(coin,(coinPosition[0],coinPosition[1]))
 
-    fpscontroller.tick(fps)
-    pygame.display.update()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -222,19 +226,36 @@ while keepPlaying:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
                 next_direction = 'FORWARD'
+                # print(character_width,"224")
             if event.key == pygame.K_LEFT:
                 next_direction = 'BACKWARDS'
 
     
     if next_direction == 'FORWARD':
-        print("FORWARD")
-        orc_width += 1
-        current_rotation -= 13
+        # print("FORWARD")
+        orc_width += 1      
     elif next_direction == 'BACKWARDS':
-        print("BACKWARD")
-        orc_width -= 0.5
-        current_rotation += 13
+        # print("BACKWARD")
+        orc_width-= 0.5
 
-        
-    pygame.transform.rotate(orcwheel,current_rotation)
+    if next_direction == 'FORWARD':
+        # print("FORWARD")
+        girl_width += 1      
+    elif next_direction == 'BACKWARDS':
+        # print("BACKWARD")
+        girl_width-= 0.5
+
+    if next_direction == 'FORWARD':
+        # print("FORWARD")
+        t_width += 1      
+    elif next_direction == 'BACKWARDS':
+        # print("BACKWARD")
+        t_width -= 0.5
     
+    if coinPosition[0] == wheelX:
+        coinPosition = [-100,-100]
+        print("Collision")
+
+
+    fpscontroller.tick(fps)
+    pygame.display.update()
