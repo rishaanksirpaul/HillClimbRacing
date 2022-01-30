@@ -1,6 +1,6 @@
 import pygame,os
 import sys
-fps = 30
+fps = 60
 fpscontroller = pygame.time.Clock()
 pygame.display.set_caption('Hill Climb Racing')
 # pygame.display.set_caption(title, icontitle=None)
@@ -25,11 +25,6 @@ def load_image(name,sizeX = -1, sizeY = -1, colorKey = None):
     return image
 
 
-class Coin:
-    pass
-
-# class petrol:
-#     pass
 
 orc_width = 0
 orc_height = height-90
@@ -84,7 +79,20 @@ blue = pygame.Color(0,0,200)
 
 tick = load_image('images/tick.png' , sizeX = 80,sizeY= 80)
 wheelX = 0
+wheelY = 0
+wheelZ = 0
 red = pygame.Color(255,0,0)
+score = 0
+
+
+def showScore():
+    game_window.blit(coin,(20,20))
+    score_font = pygame.font.SysFont('times new roman', 30)
+    screen = score_font.render(f'X {score}',True,red)
+    rect = screen.get_rect()
+    rect.midtop = (100,20)
+    game_window.blit(screen,rect)
+    pygame.display.update()
 
 def levels_selected(level = "", character = ""):
     # Rectangles are needed for clickable objects
@@ -176,7 +184,9 @@ def levels_selected(level = "", character = ""):
 values = levels_selected()
 keepPlaying = True
 import random
-coinPosition = [random.randint(10,width),orc_height + 20]
+coinPosition = [random.randrange(20,width,20),orc_height + 20]
+coinPosition2 = [random.randrange(30,width,30),orc_height + 20]
+rotation = 0
 
 while keepPlaying:
     game_window.blit(desertBg, (0,0))
@@ -198,26 +208,30 @@ while keepPlaying:
         game_window.blit(orcwheel,(orc_width + 10,orc_height + 20))
         game_window.blit(orcwheel,(wheelX,orc_height + 20))
         game_window.blit(orcheadplay,(orc_width+10,orc_height-40))
-        # character_width = orc_width
+        
+
     
     if character == 'girl':
+        wheelY = girl_width+60
         game_window.blit(girlcar,(girl_width,girl_height))
         game_window.blit(girlwheel,(girl_width+10,girl_height + 20))
-        game_window.blit(girlwheel,(girl_width+60,girl_height + 20))
+        game_window.blit(girlwheel,(wheelY,girl_height + 20))
         game_window.blit(girlheadplay,(girl_width+10,girl_height-40)) 
         # character_width = girl_width
         
 
     if character == 't':
+        wheelZ = t_width+60
         game_window.blit(tcar,(t_width,t_height))
         game_window.blit(twheel,(t_width+10,t_height + 20))
-        game_window.blit(twheel,(t_width+60,t_height + 20))
+        game_window.blit(twheel,(wheelZ,t_height + 20))
         game_window.blit(theadplay,(t_width+10,t_height-40))
         # character_width = t_width
 
     game_window.blit(coin,(coinPosition[0],coinPosition[1]))
+    game_window.blit(coin,(coinPosition2[0],coinPosition2[1]))
 
-
+    showScore()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -252,10 +266,35 @@ while keepPlaying:
         # print("BACKWARD")
         t_width -= 0.5
     
-    if coinPosition[0] == wheelX:
+    if coinPosition[0] == wheelX or coinPosition[0] == wheelY or coinPosition[0] == wheelZ:
+        score += 1
         coinPosition = [-100,-100]
-        print("Collision")
+        
 
+    if coinPosition2[0] == wheelX or coinPosition2[0] == wheelY or coinPosition2[0] == wheelZ:
+        score += 1
+        coinPosition2 = [-100,-100]
 
+    if wheelX >= width:
+        orc_width = 0
+        coinPosition = [random.randrange(20,width,20),orc_height + 20]
+        coinPosition2 = [random.randrange(30,width,30),orc_height + 20]
+    elif wheelY >= width:
+        girl_width = 0
+        coinPosition = [random.randrange(20,width,20),orc_height + 20]
+        coinPosition2 = [random.randrange(30,width,30),orc_height + 20] 
+    elif wheelZ >= width:
+        t_width = 0
+        coinPosition = [random.randrange(20,width,20),orc_height + 20]
+        coinPosition2 = [random.randrange(30,width,30),orc_height + 20] 
+
+    if wheelX <= 0:
+        orc_width = 600
+
+    if wheelY <= 0:
+        girl_width = 600
+        
+    if wheelZ <= 0:
+        t_width = 600
     fpscontroller.tick(fps)
     pygame.display.update()
